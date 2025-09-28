@@ -1,31 +1,53 @@
-const express = require('express')
-const app = express()
+const express = require("express");
+const app = express();
 const cors = require("cors");
-const port = 4000
+const port = 4000;
 
 app.use(cors());
 app.use(express.json());
 
-app.get('/', (req, res) => {
-  res.send('Hello World!')
-})
-app.post("/api/auth/signup", signUpUser )
-app.post("/api/auth/login", loginUser )
+const adminUser = {
+  email: "eh.dev.sioly@gmail.com",
+  password: "123456",
+};
+
+app.get("/", (req, res) => {
+  res.send("Hello World!");
+});
+app.post("/api/auth/signup", signUpUser);
+app.post("/api/auth/login", loginUser);
 
 app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`)
-})
+  console.log(`Example app listening on port ${port}`);
+});
 
-function signUpUser(req, res){
-    const body = req.body;
-    console.log("req:", body);
-    res.send("Sign up")
+const users = [];
+
+function signUpUser(req, res) {
+  const body = req.body;
+  console.log("req:", body);
+  const email = req.body.email;
+  const password = req.body.password;
+  const dbControl = users.find((user) => user.email === email);
+  if (dbControl != null) {
+    return res.status(400).send("Email is already used");
+  }
+  const user = {
+    email: email,
+    password: password,
+  };
+  users.push(user);
+  console.log(users);
+  res.send("Sign up");
 }
 function loginUser(req, res) {
   const body = req.body;
   console.log("login req:", body);
+  if (body.email !== adminUser.email || body.password !== adminUser.password) {
+    return res.status(401).send("erreur de données");
+  }
   res.send({
     userId: "123",
-    token: "token"
+    token: "token",
   });
 }
