@@ -24,8 +24,6 @@ app.listen(port, () => {
 const users = [];
 
 function signUpUser(req, res) {
-  const body = req.body;
-  console.log("req:", body);
   const email = req.body.email;
   const password = req.body.password;
   const dbControl = users.find((user) => user.email === email);
@@ -37,17 +35,31 @@ function signUpUser(req, res) {
     password: password,
   };
   users.push(user);
-  console.log(users);
   res.send("Sign up");
 }
 function loginUser(req, res) {
-  const body = req.body;
-  console.log("login req:", body);
-  if (body.email !== adminUser.email || body.password !== adminUser.password) {
-    return res.status(401).send("erreur de données");
+  const { email, password } = req.body;
+  console.log("login req:", req.body);
+  console.log("users in memory:", users);
+
+  if (email === adminUser.email && password === adminUser.password) {
+    return res.status(200).json({
+      userId: "admin",
+      token: "fake-admin-token"
+    });
   }
-  res.send({
-    userId: "123",
-    token: "token",
+
+  const userInDb = users.find(
+    (user) => user.email === email && user.password === password
+  );
+
+  if (!userInDb) {
+    return res.status(401).json({ error: "Wrong credentials" });
+  }
+
+  res.status(200).json({
+    userId: userInDb.email,
+    token: "fake-user-token"
   });
 }
+
