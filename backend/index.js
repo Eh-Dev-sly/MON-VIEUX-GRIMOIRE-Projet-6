@@ -1,7 +1,7 @@
+require("./db/mongo.js");
 const express = require("express");
 const app = express();
 const cors = require("cors");
-require("./db/mongo.js");
 const port = 4000;
 
 app.use(cors());
@@ -22,22 +22,25 @@ app.listen(port, () => {
   console.log(`Example app listening on port ${port}`);
 });
 
-const users = [];
+const User = require("./db/mongo.js");
 
 function signUpUser(req, res) {
-  const email = req.body.email;
-  const password = req.body.password;
-  const dbControl = users.find((user) => user.email === email);
-  if (dbControl != null) {
-    return res.status(400).send("Email is already used");
-  }
-  const user = {
-    email: email,
-    password: password,
-  };
-  users.push(user);
-  res.send("Sign up");
+  const { email, password } = req.body;
+
+  // Vérifier si l'utilisateur existe déjà
+  User.findOne({ email }).then(existingUser => {
+    if (existingUser) {
+      return res.status(400).send("Email is already used");
+    }
+
+    // Créer et sauvegarder le nouvel utilisateur
+    const newUser = new User({ email, password });
+    newUser.save()
+      .then(() => res.send("Sign up"))
+      .catch(err => res.status(500).send("Erreur serveur"));
+  });
 }
+
 function loginUser(req, res) {
   const { email, password } = req.body;
   console.log("login req:", req.body);
@@ -46,7 +49,7 @@ function loginUser(req, res) {
   if (email === adminUser.email && password === adminUser.password) {
     return res.status(200).json({
       userId: "admin",
-      token: "fake-admin-token"
+      token: "fake-admin-token",
     });
   }
 
@@ -60,7 +63,6 @@ function loginUser(req, res) {
 
   res.status(200).json({
     userId: userInDb.email,
-    token: "fake-user-token"
+    token: "fake-user-token",
   });
 }
-
