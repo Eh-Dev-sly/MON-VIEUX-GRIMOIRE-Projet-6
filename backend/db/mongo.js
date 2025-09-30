@@ -9,11 +9,20 @@ mongoose.connect(DB_URL)
   .then(() => console.log("✅ MongoDB connected"))
   .catch((err) => console.error("❌ MongoDB connection error:", err));
 
-// Définition du modèle User
-const User = mongoose.model("User", {
-  email: String,
-  password: String,
+// Définition du schéma User avec validation regex
+const userSchema = new mongoose.Schema({
+  email: {
+    type: String,
+    required: true,
+    match: [/^.*@.*$/, "❌ Email must contain @"], // <-- Regex obligatoire
+  },
+  password: {
+    type: String,
+    required: true,
+  },
 });
 
-// Export du modèle pour l'utiliser dans index.js
+// Création du modèle
+const User = mongoose.model("User", userSchema);
+
 module.exports = User;

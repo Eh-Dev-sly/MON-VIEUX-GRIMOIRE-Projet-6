@@ -19,7 +19,7 @@ app.post("/api/auth/signup", signUpUser);
 app.post("/api/auth/login", loginUser);
 
 app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`);
+  console.log(`✅ Backend running on port ${port}`);
 });
 
 const User = require("./db/mongo.js");
@@ -27,25 +27,26 @@ const User = require("./db/mongo.js");
 function signUpUser(req, res) {
   const { email, password } = req.body;
 
-  // Vérifier si l'utilisateur existe déjà
-  User.findOne({ email }).then(existingUser => {
+  User.findOne({ email }).then((existingUser) => {
     if (existingUser) {
       return res.status(400).send("Email is already used");
     }
 
-    // Créer et sauvegarder le nouvel utilisateur
     const newUser = new User({ email, password });
-    newUser.save()
-      .then(() => res.send("Sign up"))
-      .catch(err => res.status(500).send("Erreur serveur"));
+    newUser
+      .save()
+      .then(() => res.send("✅ User signed up"))
+      .catch((err) => {
+        console.error("❌ Signup error:", err);
+        res.status(500).send("Erreur serveur");
+      });
   });
 }
 
 function loginUser(req, res) {
   const { email, password } = req.body;
-  console.log("login req:", req.body);
-  console.log("users in memory:", users);
 
+  // Cas admin en dur
   if (email === adminUser.email && password === adminUser.password) {
     return res.status(200).json({
       userId: "admin",
@@ -53,16 +54,20 @@ function loginUser(req, res) {
     });
   }
 
-  const userInDb = users.find(
-    (user) => user.email === email && user.password === password
-  );
+  // Recherche dans MongoDB
+  User.findOne({ email, password })
+    .then((user) => {
+      if (!user) {
+        return res.status(401).json({ error: "Erreur de mot de passe" });
+      }
 
-  if (!userInDb) {
-    return res.status(401).json({ error: "Wrong credentials" });
-  }
-
-  res.status(200).json({
-    userId: userInDb.email,
-    token: "fake-user-token",
-  });
+      res.status(200).json({
+        userId: user.email,
+        token: "fake-user-token",
+      });
+    })
+    .catch((err) => {
+      console.error("❌ Login error:", err);
+      res.status(500).json({ error: "Erreur serveur" });
+    });
 }
