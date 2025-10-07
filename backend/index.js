@@ -113,7 +113,7 @@ app.get("/api/books", async (req, res) => {
 });
 
 // --- POST AJOUT D’UN LIVRE ---
-app.post("/api/books", auth, multer, async (req, res) => {
+app.post("/api/books", auth, multer.upload, multer.compressImage, async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: "Image manquante" });
 
@@ -136,7 +136,8 @@ app.post("/api/books", auth, multer, async (req, res) => {
 });
 
 // --- PUT MODIFICATION D’UN LIVRE ---
-app.put("/api/books/:id", auth, multer, async (req, res) => {
+app.put("/api/books/:id", auth, multer.upload, multer.compressImage, async (req, res) => {
+
   try {
     const bookObject = req.file
       ? {
@@ -151,7 +152,7 @@ app.put("/api/books/:id", auth, multer, async (req, res) => {
 
     if (!book) return res.status(404).json({ error: "Livre introuvable" });
 
-    if (book.userId !== req.auth.userId) {
+    if (book.userId.toString() !== req.auth.userId) {
       return res.status(403).json({ error: "Non autorisé à modifier ce livre" });
     }
 
@@ -164,7 +165,7 @@ app.put("/api/books/:id", auth, multer, async (req, res) => {
 });
 
 // --- DELETE SUPPRESSION D’UN LIVRE ---
-app.delete("/api/books/:id", async (req, res) => {
+app.delete("/api/books/:id", auth, async (req, res) => { 
   try {
     const { id } = req.params;
     const book = await Book.findById(id);
@@ -173,10 +174,9 @@ app.delete("/api/books/:id", async (req, res) => {
       return res.status(404).json({ error: "Livre introuvable" });
     }
 
-    // 🧠 Vérifier que l'utilisateur est bien le propriétaire
-    // (pour l'instant sans middleware auth complet)
-    const userIdFromHeader = req.headers["user-id"]; // temporaire, simplifié
-    if (book.userId !== userIdFromHeader) {
+    // Vérifier que l'utilisateur est bien le propriétaire
+    const userIdFromHeader = req.headers["user-id"];
+    if (book.userId.toString() !== req.auth.userId) {
       return res.status(401).json({ error: "Non autorisé à supprimer ce livre" });
     }
 
