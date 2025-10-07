@@ -1,20 +1,22 @@
-const books = [
-  {
-    userId: "1",
-    title: "Lords of the Ring",
-    author: "tolkein",
-    imageUrl:
-      "https://i.pinimg.com/736x/5f/62/9e/5f629e91037002d4ebceac3f4e3639a5.jpg",
-    year: 2023,
-    genre: "Pop culture",
-    ratings: [
-      {
-        userId: "1",
-        grade: 5,
-      },
-    ],
-    averageRating : 5
-  },
-];
+const mongoose = require("mongoose");
 
-module.exports = { books };
+const bookSchema = new mongoose.Schema({
+  userId: { type: String, required: true },       // L'utilisateur qui a ajouté le livre
+  title: { type: String, required: true },        // Titre du livre
+  author: { type: String, required: true },       // Auteur du livre
+  imageUrl: { type: String, required: true },     // URL de l'image du livre
+  year: { type: Number, required: true },         // Année de publication
+  genre: { type: String, required: true },        // Genre du livre
+  ratings: [                                      // Tableau des notes des utilisateurs
+    {
+      userId: { type: String, required: true },  // ID de l'utilisateur qui a noté
+      grade: { type: Number, required: true },   // Note donnée
+    },
+  ],
+  averageRating: { type: Number, default: 0 },   // Moyenne des notes
+});
+
+// Création du modèle
+const Book = mongoose.model("Book", bookSchema);
+
+module.exports = Book;
