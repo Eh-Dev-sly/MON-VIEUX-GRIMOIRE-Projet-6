@@ -4,6 +4,7 @@ const cors = require("cors");
 const bcrypt = require("bcrypt");
 require("./db/mongo"); // initialise la connexion MongoDB
 const User = require("./models/User");
+const { books } = require("./models/books");
 
 const app = express();
 const port = 4000;
@@ -22,6 +23,12 @@ app.post("/api/auth/login", loginUser);
 app.listen(port, () => {
   console.log(`✅ Server listening on http://localhost:${port}`);
 });
+
+app.get("/api/books", getBooks);
+
+function getBooks(req, res){
+  res.send(books);
+}
 
 // --- SIGNUP ---
 async function signUpUser(req, res) {
