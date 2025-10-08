@@ -21,7 +21,7 @@ const compressImage = async (req, res, next) => {
 
   try {
     await sharp(req.file.buffer)
-      .resize({ width: 207, height: 261 })
+      .resize({ width: 206, height: 260 })
       .toFormat('webp')
       .webp({ quality: 80 }) 
       .toFile(outputPath);

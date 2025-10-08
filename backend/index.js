@@ -26,13 +26,6 @@ app.use(express.json());
 app.use("/images", express.static(path.join(__dirname, "images"))); // pour servir les images
 
 // ======================
-// 🌍 ROUTE DE TEST
-// ======================
-app.get("/", (req, res) => {
-  res.send("📚 API Mon Vieux Grimoire en ligne !");
-});
-
-// ======================
 // AUTHENTIFICATION
 // ======================
 
@@ -80,7 +73,7 @@ app.post("/api/auth/login", async (req, res) => {
       return res.status(401).json({ error: "Mot de passe incorrect" });
     }
 
-    // ✅ Génération du token JWT
+    // Génération du token JWT
     const token = jwt.sign(
       { userId: userInDb._id },
       process.env.JWT_SECRET || "RANDOM_SECRET_KEY",
@@ -122,7 +115,7 @@ app.post("/api/books", auth, multer.upload, multer.compressImage, async (req, re
 
     const newBook = new Book({
       ...bookData,
-      userId: req.auth.userId, // ✅ on prend le userId depuis le token
+      userId: req.auth.userId, // on prend le userId depuis le token
       imageUrl: `${req.protocol}://${req.get("host")}/images/${req.file.filename}`,
       averageRating: 0,
     });
@@ -180,7 +173,7 @@ app.delete("/api/books/:id", auth, async (req, res) => {
       return res.status(401).json({ error: "Non autorisé à supprimer ce livre" });
     }
 
-    // 🖼️ Supprimer l'image associée
+    // Supprimer l'image associée
     const filename = book.imageUrl.split("/images/")[1];
     fs.unlink(`images/${filename}`, async (err) => {
       if (err) {
@@ -196,9 +189,62 @@ app.delete("/api/books/:id", auth, async (req, res) => {
   }
 });
 
+// --- AFFICHAGE DU LIVRE SELECTIONNE ---
+app.get("/api/books/:id", async (req, res) => {
+  try {
+    const bookId = req.params.id; // récupère l'id de l'URL
+
+    const book = await Book.findById(bookId); // recherche dans MongoDB
+    if (!book) {
+      return res.status(404).json({ error: "Livre introuvable" });
+    }
+
+    res.status(200).json(book);
+  } catch (err) {
+    console.error("❌ Erreur récupération livre :", err);
+    res.status(500).json({ error: "Erreur serveur" });
+  }
+});
+
+// --- POST AJOUT D'UNE NOTE ---
+app.post("/api/books/:id/rating", auth, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { rating } = req.body;
+
+    if (!rating || rating < 0 || rating > 5) {
+      return res.status(400).json({ error: "Note invalide (0 à 5)" });
+    }
+
+    const book = await Book.findById(id);
+    if (!book) return res.status(404).json({ error: "Livre introuvable" });
+
+    // Vérifier que l'utilisateur n'a pas déjà noté
+    const alreadyRated = book.ratings.find(r => r.userId === req.auth.userId);
+    if (alreadyRated) {
+      return res.status(400).json({ error: "Vous avez déjà noté ce livre" });
+    }
+
+    // Ajouter la note
+    book.ratings.push({ userId: req.auth.userId, grade: rating });
+
+    // Recalculer la moyenne
+    const total = book.ratings.reduce((acc, r) => acc + r.grade, 0);
+    book.averageRating = total / book.ratings.length;
+
+    const updatedBook = await book.save();
+
+    res.status(200).json(updatedBook); // <-- renvoie tout le livre mis à jour
+  } catch (err) {
+    console.error("Erreur ajout note :", err);
+    res.status(500).json({ error: "Erreur serveur" });
+  }
+});
+
+
 // ======================
-// 🚀 LANCEMENT DU SERVEUR
+// LANCEMENT DU SERVEUR
 // ======================
 app.listen(port, () => {
-  console.log(`✅ Serveur en ligne sur http://localhost:${port}`);
+  console.log(`Serveur en ligne sur http://localhost:${port}`);
 });
