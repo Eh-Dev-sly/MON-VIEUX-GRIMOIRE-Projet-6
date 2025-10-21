@@ -1,21 +1,22 @@
 // models/user.js
-const mongoose = require("../db/mongo"); // récupère la connexion
+const mongoose = require("../db/mongo");
 
-// Schéma utilisateur
 const userSchema = new mongoose.Schema({
   email: {
     type: String,
-    required: true,
-    match: /.+\@.+\..+/, // doit contenir un @
-    unique: true,        // email unique
+    required: [true, "L'adresse email est requise"],
+    match: [
+      /^[^\s@]+@[^\s@]+\.[^\s@]+$/, 
+      "Veuillez fournir une adresse email valide (exemple: utilisateur@mail.com)"
+    ],
+    unique: true,
   },
   password: {
     type: String,
-    required: true,
+    required: [true, "Le mot de passe est requis"],
   },
 });
 
-// Création du modèle
 const User = mongoose.model("User", userSchema);
 
 module.exports = User;

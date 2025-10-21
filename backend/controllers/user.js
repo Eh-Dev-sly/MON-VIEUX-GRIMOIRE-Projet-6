@@ -26,11 +26,23 @@ exports.signup = async (req, res) => {
     const savedUser = await newUser.save();
 
     res.status(201).json({
-      message: "✅ Utilisateur créé avec succès",
+      message: "Utilisateur créé avec succès",
       userId: savedUser._id,
     });
   } catch (err) {
     console.error("Erreur inscription:", err);
+    
+    // Gestion des erreurs de validation Mongoose
+    if (err.name === 'ValidationError') {
+      const message = Object.values(err.errors)[0].message;
+      return res.status(400).json({ error: message });
+    }
+    
+    // Gestion de l'erreur d'email dupliqué (code 11000)
+    if (err.code === 11000) {
+      return res.status(400).json({ error: "Email déjà utilisé" });
+    }
+    
     res.status(500).json({ error: "Erreur serveur" });
   }
 };
@@ -42,12 +54,12 @@ exports.login = async (req, res) => {
 
     const userInDb = await User.findOne({ email });
     if (!userInDb) {
-      return res.status(401).json({ error: "Utilisateur non trouvé" });
+      return res.status(401).json({ error: "Email ou mot de passe incorrect" });
     }
 
     const isPasswordValid = await bcrypt.compare(password, userInDb.password);
     if (!isPasswordValid) {
-      return res.status(401).json({ error: "Mot de passe incorrect" });
+      return res.status(401).json({ error: "Email ou mot de passe incorrect" });
     }
 
     // Génération du token JWT
@@ -62,7 +74,7 @@ exports.login = async (req, res) => {
       token,
     });
   } catch (err) {
-    console.error("❌ Erreur login:", err);
+    console.error("Erreur login:", err);
     res.status(500).json({ error: "Erreur serveur" });
   }
 };
