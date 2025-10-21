@@ -6,7 +6,7 @@ const multer = require("../middleware/multer-config");
 
 // Routes CRUD + notes
 router.get("/", bookCtrl.getAllBooks);
-router.get("/bestrating", bookCtrl.getBestRating); // ✅ route corrigée
+router.get("/bestrating", bookCtrl.getBestRating);
 router.get("/:id", bookCtrl.getOneBook);
 router.post("/", auth, multer.upload, multer.compressImage, bookCtrl.createBook);
 router.put("/:id", auth, multer.upload, multer.compressImage, bookCtrl.modifyBook);

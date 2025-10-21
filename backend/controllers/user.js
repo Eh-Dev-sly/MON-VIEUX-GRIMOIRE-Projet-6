@@ -30,7 +30,7 @@ exports.signup = async (req, res) => {
       userId: savedUser._id,
     });
   } catch (err) {
-    console.error("❌ Erreur inscription:", err);
+    console.error("Erreur inscription:", err);
     res.status(500).json({ error: "Erreur serveur" });
   }
 };
