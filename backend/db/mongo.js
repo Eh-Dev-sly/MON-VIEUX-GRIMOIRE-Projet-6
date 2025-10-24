@@ -7,7 +7,7 @@ const DB_URL = `mongodb+srv://${user}:${password}@monvieuxgrimoire.nukhpjv.mongo
 // Connexion MongoDB
 mongoose
   .connect(DB_URL)
-  .then(() => console.log("✅ MongoDB connected"))
-  .catch((err) => console.error("❌ MongoDB connection error:", err));
+  .then(() => console.log("MongoDB connected"))
+  .catch((err) => console.error("MongoDB connection error:", err));
 
 module.exports = mongoose;

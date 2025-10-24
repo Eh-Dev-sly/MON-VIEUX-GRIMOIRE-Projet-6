@@ -7,7 +7,7 @@ exports.getAllBooks = async (req, res) => {
     const books = await Book.find();
     res.status(200).json(books);
   } catch (err) {
-    console.error("❌ Erreur récupération livres:", err);
+    console.error("Erreur récupération livres:", err);
     res.status(500).json({ error: "Erreur serveur" });
   }
 };
@@ -19,7 +19,7 @@ exports.getOneBook = async (req, res) => {
     if (!book) return res.status(404).json({ error: "Livre introuvable" });
     res.status(200).json(book);
   } catch (err) {
-    console.error("❌ Erreur récupération livre:", err);
+    console.error("Erreur récupération livre:", err);
     res.status(500).json({ error: "Erreur serveur" });
   }
 };
@@ -40,7 +40,7 @@ exports.createBook = async (req, res) => {
     const savedBook = await newBook.save();
     res.status(201).json(savedBook);
   } catch (err) {
-    console.error("❌ Erreur création livre:", err);
+    console.error("Erreur création livre:", err);
     res.status(400).json({ error: err.message });
   }
 };
@@ -66,7 +66,7 @@ exports.modifyBook = async (req, res) => {
     await Book.updateOne({ _id: req.params.id }, { ...bookObject });
     res.status(200).json({ message: "📖 Livre modifié avec succès" });
   } catch (err) {
-    console.error("❌ Erreur modification livre:", err);
+    console.error("Erreur modification livre:", err);
     res.status(400).json({ error: err.message });
   }
 };
@@ -87,7 +87,7 @@ exports.deleteBook = async (req, res) => {
       res.status(200).json({ message: "Livre supprimé avec succès !" });
     });
   } catch (err) {
-    console.error("❌ Erreur suppression livre:", err);
+    console.error("Erreur suppression livre:", err);
     res.status(500).json({ error: "Erreur serveur" });
   }
 };
@@ -116,7 +116,7 @@ exports.rateBook = async (req, res) => {
     const updatedBook = await book.save();
     res.status(200).json(updatedBook);
   } catch (err) {
-    console.error("❌ Erreur ajout note :", err);
+    console.error("Erreur ajout note :", err);
     res.status(500).json({ error: "Erreur serveur" });
   }
 };
@@ -124,10 +124,10 @@ exports.rateBook = async (req, res) => {
 // --- LES LIVRES LES MIEUX NOTÉS ---
 exports.getBestRating = async (req, res) => {
   try {
-    const books = await Book.find().sort({ averageRating: -1 }).limit(3); // ✅ 3 meilleurs
+    const books = await Book.find().sort({ averageRating: -1 }).limit(3); // 3 meilleurs
     res.status(200).json(books);
   } catch (err) {
-    console.error("❌ Erreur récupération meilleurs livres :", err);
+    console.error("Erreur récupération meilleurs livres :", err);
     res.status(500).json({ error: "Erreur serveur" });
   }
 };
